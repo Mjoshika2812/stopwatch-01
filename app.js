@@ -1,33 +1,58 @@
-const apiKey = '3caf91e296344855ca38b928c8b78af3'; 
-const apiUrl = "https://api.openweathermap.org/data/2.5/weather?q=";
+let [milliseconds, seconds, minutes, hours] = [0, 0, 0, 0];
+let timeRef = document.querySelector(".timer-display");
+let lapContainer = document.querySelector(".laps");
+let int = null;
 
-const searchButton = document.getElementById('searchButton');
-const cityInput = document.getElementById('cityInput');
-const weatherInfo = document.getElementById('weatherInfo');
-
-searchButton.addEventListener('click', () => {                                          
-    const city = cityInput.value;
-    getWeatherData(city);
+document.getElementById("start-timer").addEventListener("click", () => {
+    if (int !== null) {
+        clearInterval(int);
+    }
+    int = setInterval(displayTimer, 10);
 });
 
-function getWeatherData(city) {
-    fetch(`${apiUrl}${city}&appid=${apiKey}&units=metric`)
-        .then(response => response.json())
-        .then(data => {
-            console.log(data); 
-            const { temp, humidity, pressure } = data.main;
-            const { description, icon } = data.weather[0];
-            weatherInfo.innerHTML = `
-            <img src="http://openweathermap.org/img/wn/${icon}.png" alt="Weather Icon" class="img">
-                <h2>${city}</h2>
-                <p>Temperature: ${temp}°C</p>
-                <p>Humidity: ${humidity}%</p>
-                <p>Pressure: ${pressure} hPa</p>
-                <p>Description: ${description}</p>  
-            `;
-        })
-        .catch(error => {
-            console.error('Error fetching weather data:', error);
-            weatherInfo.textContent = 'Error: Unable to fetch weather data';
-        });
+document.getElementById("pause-timer").addEventListener("click", () => {
+    clearInterval(int);
+});
+
+document.getElementById("reset-timer").addEventListener("click", () => {
+    clearInterval(int);
+    [milliseconds, seconds, minutes, hours] = [0, 0, 0, 0];
+    timeRef.innerHTML = "00 : 00 : 00 : 000 ";
+    lapContainer.innerHTML = ""; // Clear laps
+});
+
+document.getElementById("lap-timer").addEventListener("click", () => {
+    let lapTime = timeRef.innerHTML;
+    let lapElement = document.createElement("div");
+    lapElement.className = "lap";
+    lapElement.innerText = lapTime;
+    lapContainer.appendChild(lapElement);
+});
+
+function displayTimer() {
+    milliseconds += 10;
+    if (milliseconds == 1000) {
+        milliseconds = 0;
+        seconds++;
+        if (seconds == 60) {
+            seconds = 0;
+            minutes++;
+            if (minutes == 60) {
+                minutes = 0;
+                hours++;
+            }
+        }
+    }
+
+    let h = hours < 10 ? "0" + hours : hours;
+    let m = minutes < 10 ? "0" + minutes : minutes;
+    let s = seconds < 10 ? "0" + seconds : seconds;
+    let ms = 
+        milliseconds < 10
+        ? "00" + milliseconds
+        : milliseconds < 100
+        ? "0" + milliseconds
+        : milliseconds;
+
+    timeRef.innerHTML = `${h} : ${m} : ${s} : ${ms}`;
 }
